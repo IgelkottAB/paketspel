@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paketutkörar Simulator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="game"></div>
+
+  <div id="hud">
+    <header>
+      <div class="logo">PAKET<span>UTKÖRAR</span></div>
+      <div class="money">Företagskassa: <b id="money">0 kr</b></div>
+      <div class="level">Level <b id="level">1</b></div>
+    </header>
+
+    <section id="mission">
+      <small>ARBETSORDER</small>
+      <h3 id="mission-title">Välkommen till lagret!</h3>
+      <p id="mission-info">Vänta på ditt första uppdrag.</p>
+    </section>
+
+    <div id="crosshair">+</div>
+
+    <div id="controls">
+      WASD – Rörelse &nbsp; E – Använd &nbsp; F – Lyft paket
+    </div>
+
+    <div id="message"></div>
+  </div>
+
+  <section id="phone" class="window hidden">
+    <button class="close" onclick="closeWindow('phone')">×</button>
+    <h2>Telefon – uppdrag</h2>
+    <div id="phone-content"></div>
+    <button id="accept" onclick="acceptOrder()">Visa uppdrag</button>
+  </section>
+
+  <section id="computer" class="fullscreen hidden">
+    <div class="computer-window">
+      <button class="close" onclick="closeWindow('computer')">×</button>
+      <h1>IGELKOTTS WEBSHOP</h1>
+      <p id="customer-order">Kundens beställning</p>
+      <div id="products"></div>
+      <button onclick="orderProducts()">Beställ varor</button>
+    </div>
+  </section>
+
+  <section id="settings" class="fullscreen hidden">
+    <div class="computer-window">
+      <button class="close" onclick="closeWindow('settings')">×</button>
+      <h1>Inställningar</h1>
+      <h2>Kontroller</h2>
+      <p>WASD – Gå och kör</p>
+      <p>Mus – Titta runt</p>
+      <p>E – Använd dörrar och dator</p>
+      <p>F – Lyft och placera paket</p>
+      <p>M – GPS i bilen</p>
+      <p>T – Chatt</p>
+      <p>ESC – Inställningar</p>
+
+      <h2>Multiplayer</h2>
+      <button onclick="showRoom()">Visa room-ID</button>
+      <p id="room-code">Inget rum anslutet</p>
+      <input id="join-code" maxlength="6" placeholder="Room-ID">
+      <button onclick="joinRoom()">Gå till room</button>
+    </div>
+  </section>
+
+  <section id="gps" class="window hidden">
+    <button class="close" onclick="closeWindow('gps')">×</button>
+    <h2>GPS</h2>
+    <input id="address" placeholder="Kundens adress">
+    <button onclick="startNavigation()">Kör</button>
+    <p id="gps-status"></p>
+  </section>
+
+  <section id="chat" class="window hidden">
+    <button class="close" onclick="closeWindow('chat')">×</button>
+    <h2>Företagets chatt</h2>
+    <div id="chat-messages"></div>
+    <input id="chat-input" placeholder="Skriv ett meddelande">
+    <button onclick="sendChat()">Skicka</button>
+  </section>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
