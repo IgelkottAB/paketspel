@@ -1,0 +1,3 @@
+
+export const SUPABASE_URL = "DIN_PROJECT_URL";
+export const SUPABASE_ANON_KEY = "DIN_PUBLISHABLE_KEY";
