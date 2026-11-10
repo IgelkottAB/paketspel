@@ -1,92 +1,117 @@
-
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Paketutkörar Simulator</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paketutkörar Simulator</title>
+<style>
+*{box-sizing:border-box}body{margin:0;overflow:hidden;background:#10151b;color:#f4f7f8;font-family:Arial,sans-serif}canvas{display:block}button,input,select{font:inherit}button{background:#27865e;color:white;border:0;border-radius:7px;padding:10px 14px;font-weight:bold;cursor:pointer}button:hover{background:#35a875}button:disabled{opacity:.4;cursor:not-allowed}
+#startScreen{position:fixed;inset:0;z-index:20;background:linear-gradient(135deg,#101820,#263b46);display:flex;align-items:center;justify-content:center;text-align:center}.startBox{background:#17232c;padding:35px;border:1px solid #49616e;border-radius:16px;width:min(460px,92%)}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:5}.hudTop{display:flex;justify-content:space-between;padding:16px;gap:10px}.hudBox{background:#111d;backdrop-filter:blur(5px);padding:12px 16px;border-radius:9px}#crosshair{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:25px}#hint{position:absolute;bottom:35px;left:50%;transform:translateX(-50%);background:#101d;padding:12px 20px;border-radius:8px;white-space:nowrap}#message{position:absolute;top:85px;left:50%;transform:translateX(-50%);background:#17252e;padding:12px 18px;border-radius:8px;display:none}
+#panel{display:none;position:fixed;z-index:10;left:50%;top:50%;transform:translate(-50%,-50%);width:min(1000px,96vw);height:min(820px,92vh);overflow:hidden;background:#17232c;border:1px solid #526976;border-radius:14px;padding:18px;box-shadow:0 15px 60px #000b}.panelHead{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #3b515d;padding-bottom:10px}.panelHead h2{margin:0}.close{background:#46545d}.shopTools{display:grid;grid-template-columns:minmax(160px,1fr) 190px 190px;gap:9px;margin:13px 0}.shopTools input,.shopTools select{min-width:0;background:#263944;color:white;border:1px solid #526976;border-radius:7px;padding:10px}.shopLayout{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:14px;height:calc(100% - 115px)}.catalog{overflow:auto;padding-right:5px}.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}.product{background:#263944;padding:12px;border-radius:10px;min-height:190px;display:flex;flex-direction:column}.product .emoji{font-size:34px}.product h3{font-size:15px;margin:7px 0}.product p{font-size:12px;color:#c4d2d8;margin:3px 0}.product .price{font-weight:bold;margin-top:auto;padding-top:9px}.product button{margin-top:9px;width:100%;font-size:12px;padding:8px}.sideOrder{background:#202f38;border-radius:10px;padding:12px;overflow:auto}.sideOrder h3{margin:3px 0 10px}.orderLine{font-size:12px;border-bottom:1px solid #40535c;padding:8px 0}.tag{font-size:11px;color:#b9cbd2}.small{color:#b9cbd2;font-size:13px;line-height:1.5}.empty{color:#b9cbd2;font-size:13px;padding:18px 4px}.categoryBar{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.categoryBar button{font-size:12px;padding:7px 10px;background:#344852}.categoryBar button.active{background:#27865e}
+#phone{position:fixed;right:18px;bottom:18px;width:250px;z-index:6;background:#14232b;border:1px solid #526976;border-radius:12px;padding:14px;display:none;pointer-events:auto}#phone h3{margin:0 0 8px}#help{position:fixed;left:16px;bottom:16px;background:#101d;padding:12px;border-radius:8px;font-size:12px;line-height:1.6}#slots{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.slot{background:#263944;border:1px solid #617681;padding:14px 4px;text-align:center;border-radius:7px;font-size:12px}.slot.filled{background:#286044}
+@media(max-width:700px){#help{display:none}.hudTop{font-size:12px}.hudBox{padding:8px}.shopTools{grid-template-columns:1fr 1fr}.shopTools input{grid-column:1/-1}.shopLayout{grid-template-columns:1fr;height:calc(100% - 150px)}.sideOrder{max-height:190px}.products{grid-template-columns:repeat(auto-fill,minmax(135px,1fr))}#panel{padding:12px}}
+</style>
 </head>
 <body>
+<div id="startScreen"><div class="startBox"><h1>📦 Paketutkörar Simulator</h1><p>Välkommen till ditt eget paketföretag.</p><p class="small">Gå till datorn, öppna kundens order och köp in varorna i webbshopen. Paketen dyker sedan upp på lagret.</p><button id="startButton">STARTA SPELET</button><p class="small">Dator rekommenderas · WASD för att gå · musen för att titta</p></div></div>
+<div id="hud"><div class="hudTop"><div class="hudBox">💰 Företagets pengar: <b id="money">500 kr</b></div><div class="hudBox">🏢 Företagsnivå: <b id="level">1</b></div></div><div id="crosshair">+</div><div id="message"></div><div id="hint">Klicka på STARTA SPELET</div></div>
+<div id="help"><b>Kontroller</b><br>WASD – Gå<br>Mus – Titta<br>E – Använd dator/dörr<br>F – Plocka / lasta paket<br>ESC – Inställningar</div>
+<div id="phone"><h3>📱 Kundorder</h3><div id="orderText">Ingen order ännu.</div></div>
+<div id="panel"><div class="panelHead"><h2 id="panelTitle">Dator</h2><button class="close" id="closePanel">Stäng ✕</button></div><div id="panelContent"></div></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import {PointerLockControls} from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/PointerLockControls.js';
 
-  <div id="game"></div>
+// Produktkatalog: 50 produkter i sex kategorier.
+const products=[
+{id:'cl01',name:'T-shirt',cat:'Kläder',emoji:'👕',price:25,type:'tshirt'},
+{id:'cl02',name:'Jeans',cat:'Kläder',emoji:'👖',price:45,type:'clothing'},
+{id:'cl03',name:'Hoodie',cat:'Kläder',emoji:'🧥',price:55,type:'clothing'},
+{id:'cl04',name:'Vinterjacka',cat:'Kläder',emoji:'🧥',price:85,type:'clothing'},
+{id:'cl05',name:'Sneakers',cat:'Kläder',emoji:'👟',price:60,type:'clothing'},
+{id:'cl06',name:'Keps',cat:'Kläder',emoji:'🧢',price:20,type:'clothing'},
+{id:'cl07',name:'Strumpor 5-pack',cat:'Kläder',emoji:'🧦',price:15,type:'clothing'},
+{id:'cl08',name:'Ryggsäck',cat:'Kläder',emoji:'🎒',price:40,type:'clothing'},
+{id:'cl09',name:'Regnjacka',cat:'Kläder',emoji:'🌧️',price:50,type:'clothing'},
+{id:'cl10',name:'Pyjamas',cat:'Kläder',emoji:'🛌',price:35,type:'clothing'},
+{id:'te01',name:'Hörlurar',cat:'Teknik',emoji:'🎧',price:65,type:'electronics'},
+{id:'te02',name:'Mobiltelefon',cat:'Teknik',emoji:'📱',price:120,type:'electronics'},
+{id:'te03',name:'Surfplatta',cat:'Teknik',emoji:'📲',price:110,type:'electronics'},
+{id:'te04',name:'Datorskärm',cat:'Teknik',emoji:'🖥️',price:100,type:'electronics'},
+{id:'te05',name:'Tangentbord',cat:'Teknik',emoji:'⌨️',price:45,type:'electronics'},
+{id:'te06',name:'Datormus',cat:'Teknik',emoji:'🖱️',price:25,type:'electronics'},
+{id:'te07',name:'Högtalare',cat:'Teknik',emoji:'🔊',price:55,type:'electronics'},
+{id:'te08',name:'Spelkonsol',cat:'Teknik',emoji:'🎮',price:130,type:'electronics'},
+{id:'te09',name:'Kamera',cat:'Teknik',emoji:'📷',price:95,type:'electronics'},
+{id:'te10',name:'Smartklocka',cat:'Teknik',emoji:'⌚',price:75,type:'electronics'},
+{id:'le01',name:'LEGO-set',cat:'Leksaker',emoji:'🧱',price:50,type:'lego'},
+{id:'le02',name:'Fjärrstyrd bil',cat:'Leksaker',emoji:'🚗',price:60,type:'toy'},
+{id:'le03',name:'Nallebjörn',cat:'Leksaker',emoji:'🧸',price:25,type:'toy'},
+{id:'le04',name:'Docka',cat:'Leksaker',emoji:'🪆',price:30,type:'toy'},
+{id:'le05',name:'Pussel',cat:'Leksaker',emoji:'🧩',price:20,type:'toy'},
+{id:'le06',name:'Brädspel',cat:'Leksaker',emoji:'🎲',price:35,type:'toy'},
+{id:'le07',name:'Actionfigur',cat:'Leksaker',emoji:'🦸',price:30,type:'toy'},
+{id:'le08',name:'Tågbana',cat:'Leksaker',emoji:'🚂',price:70,type:'toy'},
+{id:'le09',name:'Lekboll',cat:'Leksaker',emoji:'⚽',price:15,type:'toy'},
+{id:'le10',name:'Byggklossar',cat:'Leksaker',emoji:'🧩',price:40,type:'toy'},
+{id:'he01',name:'Stol',cat:'Hem & möbler',emoji:'🪑',price:100,type:'furniture'},
+{id:'he02',name:'Soffbord',cat:'Hem & möbler',emoji:'🪵',price:100,type:'furniture'},
+{id:'he03',name:'Bokhylla',cat:'Hem & möbler',emoji:'📚',price:100,type:'furniture'},
+{id:'he04',name:'Skrivbord',cat:'Hem & möbler',emoji:'🗄️',price:100,type:'furniture'},
+{id:'he05',name:'Sänglampa',cat:'Hem & möbler',emoji:'💡',price:35,type:'home'},
+{id:'he06',name:'Väggklocka',cat:'Hem & möbler',emoji:'🕒',price:25,type:'home'},
+{id:'he07',name:'Matta',cat:'Hem & möbler',emoji:'🟫',price:45,type:'home'},
+{id:'he08',name:'Kudde',cat:'Hem & möbler',emoji:'🛏️',price:20,type:'home'},
+{id:'he09',name:'Spegel',cat:'Hem & möbler',emoji:'🪞',price:50,type:'home'},
+{id:'he10',name:'Garderob',cat:'Hem & möbler',emoji:'🚪',price:100,type:'furniture'},
+{id:'sp01',name:'Fotboll',cat:'Sport',emoji:'⚽',price:25,type:'sport'},
+{id:'sp02',name:'Basketboll',cat:'Sport',emoji:'🏀',price:25,type:'sport'},
+{id:'sp03',name:'Cykel',cat:'Sport',emoji:'🚲',price:100,type:'furniture'},
+{id:'sp04',name:'Skateboard',cat:'Sport',emoji:'🛹',price:55,type:'sport'},
+{id:'sp05',name:'Yogamatta',cat:'Sport',emoji:'🧘',price:20,type:'sport'},
+{id:'sp06',name:'Hantlar',cat:'Sport',emoji:'🏋️',price:40,type:'sport'},
+{id:'sp07',name:'Tennisracket',cat:'Sport',emoji:'🎾',price:45,type:'sport'},
+{id:'sp08',name:'Sovsäck',cat:'Sport',emoji:'🏕️',price:50,type:'sport'},
+{id:'hu01',name:'Kaffebryggare',cat:'Hushåll',emoji:'☕',price:55,type:'home'},
+{id:'hu02',name:'Brödrost',cat:'Hushåll',emoji:'🍞',price:35,type:'home'}
+];
 
-  <div id="hud">
-    <header>
-      <div class="logo">PAKET<span>UTKÖRAR</span></div>
-      <div class="money">Företagskassa: <b id="money">0 kr</b></div>
-      <div class="level">Level <b id="level">1</b></div>
-    </header>
-
-    <section id="mission">
-      <small>ARBETSORDER</small>
-      <h3 id="mission-title">Välkommen till lagret!</h3>
-      <p id="mission-info">Vänta på ditt första uppdrag.</p>
-    </section>
-
-    <div id="crosshair">+</div>
-
-    <div id="controls">
-      WASD – Rörelse &nbsp; E – Använd &nbsp; F – Lyft paket
-    </div>
-
-    <div id="message"></div>
-  </div>
-
-  <section id="phone" class="window hidden">
-    <button class="close" onclick="closeWindow('phone')">×</button>
-    <h2>Telefon – uppdrag</h2>
-    <div id="phone-content"></div>
-    <button id="accept" onclick="acceptOrder()">Visa uppdrag</button>
-  </section>
-
-  <section id="computer" class="fullscreen hidden">
-    <div class="computer-window">
-      <button class="close" onclick="closeWindow('computer')">×</button>
-      <h1>IGELKOTTS WEBSHOP</h1>
-      <p id="customer-order">Kundens beställning</p>
-      <div id="products"></div>
-      <button onclick="orderProducts()">Beställ varor</button>
-    </div>
-  </section>
-
-  <section id="settings" class="fullscreen hidden">
-    <div class="computer-window">
-      <button class="close" onclick="closeWindow('settings')">×</button>
-      <h1>Inställningar</h1>
-      <h2>Kontroller</h2>
-      <p>WASD – Gå och kör</p>
-      <p>Mus – Titta runt</p>
-      <p>E – Använd dörrar och dator</p>
-      <p>F – Lyft och placera paket</p>
-      <p>M – GPS i bilen</p>
-      <p>T – Chatt</p>
-      <p>ESC – Inställningar</p>
-
-      <h2>Multiplayer</h2>
-      <button onclick="showRoom()">Visa room-ID</button>
-      <p id="room-code">Inget rum anslutet</p>
-      <input id="join-code" maxlength="6" placeholder="Room-ID">
-      <button onclick="joinRoom()">Gå till room</button>
-    </div>
-  </section>
-
-  <section id="gps" class="window hidden">
-    <button class="close" onclick="closeWindow('gps')">×</button>
-    <h2>GPS</h2>
-    <input id="address" placeholder="Kundens adress">
-    <button onclick="startNavigation()">Kör</button>
-    <p id="gps-status"></p>
-  </section>
-
-  <section id="chat" class="window hidden">
-    <button class="close" onclick="closeWindow('chat')">×</button>
-    <h2>Företagets chatt</h2>
-    <div id="chat-messages"></div>
-    <input id="chat-input" placeholder="Skriv ett meddelande">
-    <button onclick="sendChat()">Skicka</button>
-  </section>
-
-  <script type="module" src="src/main.js"></script>
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bb3c1);scene.fog=new THREE.Fog(0x9bb3c1,25,65);
+const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.1,100);camera.position.set(0,1.7,7);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;document.body.appendChild(renderer.domElement);
+const controls=new PointerLockControls(camera,renderer.domElement);scene.add(camera);
+scene.add(new THREE.HemisphereLight(0xffffff,0x53616b,2));const sun=new THREE.DirectionalLight(0xffffff,2.1);sun.position.set(-8,15,8);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);scene.add(sun);
+const mat=(color,roughness=.8)=>new THREE.MeshStandardMaterial({color,roughness});
+const materials={floor:mat(0x626c70),wall:mat(0xb8c1c3),dark:mat(0x26343a),metal:mat(0x56656b),wood:mat(0x9a7045),green:mat(0x24734e),yellow:mat(0xe2b844)};
+function box(name,x,y,z,w,h,d,material,interactable=false){const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData.name=name;mesh.userData.interactable=interactable;scene.add(mesh);return mesh;}
+// Lagerlokal
+box('Golv',0,-.15,0,24,.3,24,materials.floor);box('Bakvägg',0,4,-12,24,8,.3,materials.wall);box('Vänstervägg',-12,4,0,.3,8,24,materials.wall);box('Högervägg',12,4,0,.3,8,24,materials.wall);box('Tak',0,8,0,24,.3,24,materials.wall);
+for(let row=0;row<2;row++){const z=-4+row*4;for(let level=0;level<3;level++){box('Hyllplan',-6,1+level*1.25,z,5,.12,1.5,materials.wood);box('Hyllstolpe',-8.4,2,z,.12,4,1.5,materials.metal);box('Hyllstolpe',-3.6,2,z,.12,4,1.5,materials.metal);}}
+box('Skrivbord',4,1.1,-7,3,.2,1.5,materials.wood);box('Dator',4,1.9,-7.4,1.1,.8,.15,materials.dark,true);box('Skärm',4,1.9,-7.29,.85,.55,.04,materials.green);
+const garage=box('Garageport',0,3.3,11.8,7,6,.25,materials.metal,true);let garageOpen=false;
+const van=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(3,2.2,5),mat(0xe5e8e8));body.position.y=1.3;body.castShadow=true;van.add(body);const cab=new THREE.Mesh(new THREE.BoxGeometry(2.8,1.5,1.5),mat(0x2b6076));cab.position.set(0,1.3,1.65);van.add(cab);const glass=new THREE.Mesh(new THREE.BoxGeometry(2.4,.75,.05),mat(0x263c49));glass.position.set(0,1.65,2.42);van.add(glass);for(const x of [-1.55,1.55])for(const z of [-1.5,1.7]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.48,.48,.3,20),mat(0x15191b));wheel.rotation.z=Math.PI/2;wheel.position.set(x,.55,z);van.add(wheel);}van.position.set(0,0,7);van.userData.name='Paketbil';van.userData.interactable=true;scene.add(van);
+const rearDoors=box('Bakdörrar',0,1.4,4.47,2.7,1.8,.12,materials.metal,true);let rearOpen=false;
+const packageObjects=[];const slots=[];for(let i=0;i<10;i++){const x=-.95+(i%5)*.48,z=5.8+Math.floor(i/5)*.8;const s=box('Lastplats '+(i+1),x,.25,z,.42,.12,.65,materials.green);slots.push({mesh:s,package:null});}
+function createPackage(product,x,y,z){const mesh=new THREE.Mesh(new THREE.BoxGeometry(.8,.65,.7),mat(product.type==='furniture'?0x9a7045:product.type==='lego'?0xe5a83d:0xc8b18a));mesh.position.set(x,y,z);mesh.castShadow=true;mesh.userData.name='Paket: '+product.name;mesh.userData.interactable=true;mesh.userData.product=product;scene.add(mesh);packageObjects.push(mesh);return mesh;}
+let money=500,currentOrder=null,orderedIds=new Set(),carrying=null,target=null,panelOpen=false;const hint=document.getElementById('hint'),messageBox=document.getElementById('message'),panel=document.getElementById('panel');
+function say(t){messageBox.textContent=t;messageBox.style.display='block';clearTimeout(say.timer);say.timer=setTimeout(()=>messageBox.style.display='none',2600);}
+function updateMoney(){document.getElementById('money').textContent=money+' kr';}
+function openPanel(title,html){controls.unlock();panelOpen=true;document.getElementById('panelTitle').textContent=title;document.getElementById('panelContent').innerHTML=html;panel.style.display='block';}
+function closePanel(){panel.style.display='none';panelOpen=false;}
+document.getElementById('closePanel').onclick=closePanel;
+function newCustomerOrder(){const count=2+Math.floor(Math.random()*3),pool=[...products].sort(()=>Math.random()-.5).slice(0,count);currentOrder=pool.map(p=>({productId:p.id,quantity:1,done:false}));orderedIds=new Set();document.getElementById('phone').style.display='block';renderCustomerOrder();}
+function renderCustomerOrder(){const el=document.getElementById('orderText');if(!currentOrder){el.textContent='Ingen order ännu.';return;}el.innerHTML='<b>Kund: Lina Andersson</b><br>Adress: Björkvägen 12<br><br>'+currentOrder.map(o=>{const p=products.find(x=>x.id===o.productId);return (o.done?'✅':'⬜')+' '+p.emoji+' '+p.name;}).join('<br>');}
+function showShop(){const html=`<div class="shopTools"><input id="searchBox" type="search" placeholder="🔎 Sök bland 50 varor ..."><select id="categorySelect"><option value="Alla">Alla kategorier</option>${['Kläder','Teknik','Leksaker','Hem & möbler','Sport','Hushåll'].map(c=>`<option>${c}</option>`).join('')}</select><select id="sortSelect"><option value="default">Sortera: Standard</option><option value="name">Namn A–Ö</option><option value="priceLow">Pris: lägst först</option><option value="priceHigh">Pris: högst först</option></select></div><div class="shopLayout"><div class="catalog"><div class="categoryBar">${['Alla','Kläder','Teknik','Leksaker','Hem & möbler','Sport','Hushåll'].map(c=>`<button class="catBtn ${c==='Alla'?'active':''}" data-cat="${c}">${c}</button>`).join('')}</div><div id="productGrid" class="products"></div></div><aside class="sideOrder"><h3>📋 Kundens order</h3><div id="shopOrder"></div><p class="small">Köp bara varorna som kunden har beställt. Inköpen kostar inget i den här spelversionen.</p></aside></div>`;openPanel('💻 Företagets webbshop',html);let activeCategory='Alla';const search=document.getElementById('searchBox'),category=document.getElementById('categorySelect'),sort=document.getElementById('sortSelect');function render(){let list=products.filter(p=>(activeCategory==='Alla'||p.cat===activeCategory)&&p.name.toLowerCase().includes(search.value.toLowerCase()));if(sort.value==='name')list.sort((a,b)=>a.name.localeCompare(b.name,'sv'));if(sort.value==='priceLow')list.sort((a,b)=>a.price-b.price);if(sort.value==='priceHigh')list.sort((a,b)=>b.price-a.price);document.getElementById('productGrid').innerHTML=list.length?list.map(p=>{const required=currentOrder?.some(o=>o.productId===p.id&&!o.done);const bought=orderedIds.has(p.id);return `<article class="product"><div class="emoji">${p.emoji}</div><h3>${p.name}</h3><p>${p.cat}</p><p class="tag">${required?'● Kundens beställning':bought?'✓ Redan inköpt':'Finns i sortimentet'}</p><div class="price">${p.price} kr leveransersättning</div><button data-buy="${p.id}" ${!required||bought?'disabled':''}>${bought?'Inköpt':required?'Köp in vara':'Ej beställd'}</button></article>`;}).join(''):'<div class="empty">Inga produkter hittades. Prova ett annat sökord.</div>';document.getElementById('shopOrder').innerHTML=currentOrder?currentOrder.map(o=>{const p=products.find(x=>x.id===o.productId);return `<div class="orderLine">${o.done?'✅':'⬜'} ${p.emoji} ${p.name}<br><span class="tag">${o.done?'Inköpt':'Väntar på inköp'}</span></div>`;}).join(''):'Ingen aktiv kundorder.';document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>buyProduct(b.dataset.buy));}
+search.oninput=render;sort.onchange=render;category.onchange=()=>{activeCategory=category.value;document.querySelectorAll('.catBtn').forEach(b=>b.classList.toggle('active',b.dataset.cat===activeCategory));render();};document.querySelectorAll('.catBtn').forEach(b=>b.onclick=()=>{activeCategory=b.dataset.cat;category.value=activeCategory;document.querySelectorAll('.catBtn').forEach(x=>x.classList.toggle('active',x===b));render();});render();}
+function buyProduct(id){const orderItem=currentOrder?.find(o=>o.productId===id&&!o.done);if(!orderItem){say('Den varan finns inte i kundens order.');return;}const p=products.find(x=>x.id===id);const count=packageObjects.length;const row=count%5,level=Math.floor(count/5)%3,z=-4+(Math.floor(count/5)%2)*4;createPackage(p,-7.7+row*.85,.55+level*1.25,z);orderItem.done=true;orderedIds.add(id);renderCustomerOrder();say(p.name+' är inköpt och finns på hyllan.');showShop();}
+function getTarget(){const raycaster=new THREE.Raycaster();raycaster.setFromCamera(new THREE.Vector2(0,0),camera);const hits=raycaster.intersectObjects(scene.children,true);for(const hit of hits){let obj=hit.object;while(obj&&!obj.userData.interactable&&obj.parent!==scene)obj=obj.parent;if(obj&&obj.userData.interactable&&hit.distance<5)return obj;}return null;}
+function interact(){if(!target)return;const n=target.userData.name;if(n==='Dator')showShop();else if(n==='Garageport'){garageOpen=!garageOpen;garage.position.y=garageOpen?7:3.3;say(garageOpen?'Garageporten öppnas.':'Garageporten stängs.');}else if(n==='Bakdörrar'){rearOpen=!rearOpen;rearDoors.position.z=rearOpen?4.9:4.47;say(rearOpen?'Bakdörrarna öppnas.':'Bakdörrarna stängs.');}else if(n==='Paketbil')say('Paketbilen är redo. Lasten sker vid bakdörrarna.');}
+function pickup(){if(carrying){if(rearOpen){const slot=slots.find(s=>!s.package);if(!slot){say('Alla tio lastplatser är upptagna!');return;}slot.package=carrying;carrying.position.set(slot.mesh.position.x,slot.mesh.position.y+.45,slot.mesh.position.z);scene.add(carrying);carrying.userData.interactable=false;carrying=null;say('Paketet är lastat i bilen!');}else say('Öppna bakdörrarna först med E.');return;}if(target?.userData.product){carrying=target;const i=packageObjects.indexOf(target);if(i>=0)packageObjects.splice(i,1);carrying.userData.interactable=false;camera.add(carrying);carrying.position.set(.45,-.35,-.8);carrying.rotation.set(0,0,0);say('Du plockade upp '+carrying.userData.product.name+'.');}else say('Titta på ett paket för att plocka upp det.');}
+function showSettings(){openPanel('⚙️ Inställningar och hjälp',`<h3>Så spelar du</h3><p>WASD – Gå runt i lagret.</p><p>Mus – Titta omkring.</p><p>E – Använd datorn och öppna/stäng dörrar.</p><p>F – Plocka upp paket eller lasta bilen.</p><p>Gå till datorn för att se kundens order och handla bland 50 produkter. Sök, välj kategori och sortera efter pris eller namn.</p><p class="small">Stadskörning, GPS, polis, arbetare och multiplayer är ännu inte byggda.</p>`);}
+document.addEventListener('keydown',e=>{if(e.code==='KeyE'&&!panelOpen)interact();if(e.code==='KeyF'&&!panelOpen)pickup();if(e.code==='Escape'&&panelOpen)closePanel();else if(e.code==='Escape'&&!panelOpen)showSettings();});
+document.getElementById('startButton').onclick=()=>{document.getElementById('startScreen').style.display='none';controls.lock();newCustomerOrder();say('Välkommen! Gå till datorn och handla kundens varor.');};renderer.domElement.addEventListener('click',()=>{if(!panelOpen&&document.getElementById('startScreen').style.display==='none'&&!controls.isLocked)controls.lock();});
+const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);if(controls.isLocked&&!panelOpen){const speed=5*dt;let z=0,x=0;if(keys.KeyW)z-=1;if(keys.KeyS)z+=1;if(keys.KeyA)x-=1;if(keys.KeyD)x+=1;const len=Math.hypot(x,z)||1;controls.moveForward(-z/len*speed);controls.moveRight(x/len*speed);camera.position.y=1.7;camera.position.x=THREE.MathUtils.clamp(camera.position.x,-10.5,10.5);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-10.5,10.5);}target=getTarget();if(target&&controls.isLocked&&!panelOpen)hint.textContent=target.userData.product?'F – Plocka upp '+target.userData.product.name:'E – '+target.userData.name;else if(carrying&&controls.isLocked)hint.textContent=rearOpen?'F – Lägg paketet i bilen':'Gå till bakdörrarna och tryck E';else hint.textContent=controls.isLocked?'WASD – Gå | E – Använd | F – Paket':'Klicka för att fortsätta';renderer.render(scene,camera);}let keys={};document.addEventListener('keydown',e=>keys[e.code]=true);document.addEventListener('keyup',e=>keys[e.code]=false);animate();window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+</script>
 </body>
 </html>
